@@ -32,7 +32,8 @@ class Index1D:
 
     @property
     def name(self):
-        return
+        name = self.get_vd().name
+        return name if name else f"Desktop {self.index + 1}"
 
     def __int__(self):
         return self.index

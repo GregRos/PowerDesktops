@@ -31,6 +31,7 @@ autoImportCompletions = true
 autoIndent = true
 diagnosticMode = "workspace"
 ignore = ["**/Lib/*.py"]
+
 extraPaths = ["../react-tk", "../keyweave"]
 [build-system]
 requires = ["poetry-core"]

@@ -50,7 +50,7 @@ class DestkopHUD(Component[Window]):
                 elipsis = f"⋯ ({len(apps) - 3}) more ⋯"
             titles = map(lambda x: truncate_text(x, 34), titles)
             titles = "\n".join(titles)
-            yield Label(
+            yield ToolTipLabel(
                 text=f"{titles}",
                 background=green_c,
                 justify="left",
@@ -58,7 +58,7 @@ class DestkopHUD(Component[Window]):
                 font=Font(family="Segoe UI Emoji", size=10, style="bold"),
             ).Pack(ipadx=0, anchor="w", fill="both")
             if elipsis:
-                yield Label(
+                yield ToolTipLabel(
                     text=elipsis,
                     background=green_c,
                     justify="center",
@@ -91,8 +91,8 @@ class DestkopHUD(Component[Window]):
                 all.append(self._win_title(self.executed, result.shove.apps))
 
             all.append(
-                Label(
-                    text=f"↩️ {orig_desktop.geometry}",
+                ToolTipLabel(
+                    text=f"↩️ {orig_desktop.name}",
                     background=old_desktop_c,
                     foreground="#ffffff",
                     justify="center",

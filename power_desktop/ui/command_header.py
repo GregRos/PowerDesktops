@@ -1,12 +1,7 @@
 from dataclasses import dataclass
 from typing import override
 
-from react_tk import (
-    Component,
-    Widget,
-    Font,
-    Label,
-)
+from react_tk import Component, Widget, Font, Label, ToolTipLabel
 
 from power_desktop.ui.desktop_status import DesktopActionReport
 
@@ -19,7 +14,7 @@ class DesktopCommandHeader(Component[Widget]):
 
     @override
     def render(self):
-        return Label(
+        return ToolTipLabel(
             text=self.input.event.command.__str__().ljust(30),
             background=header_c,
             justify="left",

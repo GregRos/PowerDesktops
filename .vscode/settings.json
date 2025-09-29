@@ -22,6 +22,9 @@
     "dfdf": true
   },
   "python-envs.pythonProjects": [],
-
-  "python.REPL.enableREPLSmartSend": false
+  "python.REPL.enableREPLSmartSend": false,
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.indexing": true,
+  "python.analysis.typeCheckingMode": "strict"
 }
