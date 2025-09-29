@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 
-from pywinauto.win32_element_info import (  # pyright: ignore[reportMissingTypeStubs]
+from pywinauto.win32_element_info import (
     HwndElementInfo,
 )
-from keyweave import HotkeyEvent  # pyright: ignore[reportMissingTypeStubs]
-from desktop_model.model_1d import Index1D
+from keyweave import HotkeyEvent
+from power_desktop.model_1d import Index1D
 
 
 class DesktopAction:

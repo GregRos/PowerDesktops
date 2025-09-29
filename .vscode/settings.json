@@ -1,16 +1,13 @@
 {
-  "python.analysis.typeCheckingMode": "strict",
-  "python.analysis.indexing": true,
-  "python.analysis.autoImportCompletions": true,
-  "python.analysis.exclude": ["**/site-packages/**"],
   "debugpy.debugJustMyCode": true,
   "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
+    "**/__pycache__": true,
     "**/.DS_Store": true,
-    "**/Thumbs.db": true,
+    "**/.git": true,
+    "**/.hg": true,
+    "**/.idea": true,
+    "**/.mypy_cache": true,
+    "**/.svn": true,
     "**/*.aux": true,
     "**/*.bbl": true,
     "**/*.fdb_latexmk": true,
@@ -18,13 +15,13 @@
     "**/*.log": true,
     "**/*.out": true,
     "**/*.synctex.gz": true,
-    "**/.idea": true,
-    "**/.mypy_cache": true,
-    "**/__pycache__": true,
+    "**/CVS": true,
     "**/dist": true,
     "**/dist_aux": true,
+    "**/Thumbs.db": true,
     "dfdf": true
   },
-  "python.REPL.enableREPLSmartSend": false,
-  "python-envs.pythonProjects": []
+  "python-envs.pythonProjects": [],
+
+  "python.REPL.enableREPLSmartSend": false
 }

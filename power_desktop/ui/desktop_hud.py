@@ -2,12 +2,13 @@ from dataclasses import dataclass
 from typing import Any, override
 
 
-from react_tk import (  # pyright: ignore[reportMissingTypeStubs]
+from react_tk import (
     Label,
     Font,
     Widget,
     Component,
     Window,
+    ToolTipLabel,
 )
 
 from power_desktop.ui.command_header import DesktopCommandHeader
@@ -74,7 +75,7 @@ class DestkopHUD(Component[Window]):
             new_desktop = result.shove.end if result.shove else result.pan.end  # type: ignore
             all: list[Any] = [
                 DesktopCommandHeader(input=result),
-                Label(
+                ToolTipLabel(
                     text=f"🖥️ {new_desktop.name}{" 👁️" if result.pan else ""}",
                     background=green_c,
                     foreground="#ffffff",

@@ -1,5 +1,6 @@
 import ctypes
 import logging
+from typing import Any
 
 from colorama import Fore, Style, init
 
@@ -44,7 +45,7 @@ class CustomFormatter(logging.Formatter):
                 return "❓"
         return name
 
-    def format(self, record):
+    def format(self, record: Any):
         record.name = self._get_name_emoji(record.name)
         formatter = self.formatters[record.levelno]
         return formatter.format(record)
@@ -59,4 +60,4 @@ def setup_logging():
     file_handler = logging.FileHandler("log.log", encoding="utf-8")
     # Add the console handler to the logger
     logging.basicConfig(handlers=[ch, file_handler], level=logging.INFO)
-    logging.getLogger("server").setLevel(logging.DEBUG)
+    logging.getLogger("react_tk").setLevel(logging.DEBUG)

@@ -18,10 +18,20 @@ pyvda = "^0.4.3"
 pywinauto = "^0.6.8"
 typeguard = "^4.3.0"
 python-benedict = "^0.33.2"
-react-tk = { path = "../react-tk" }
-keyweave = { path = "../keyweave" }
+react-tk = { path = "../react-tk", develop = true }
+keyweave = { path = "../keyweave", develop = true }
 
+[tool.poetry.scripts]
+power-desktop = "power_desktop.main:start"
 
+[tool.pyright]
+typeCheckingMode = "strict"
+exclude = ["**/site-packages/**"]
+autoImportCompletions = true
+autoIndent = true
+diagnosticMode = "workspace"
+ignore = ["**/Lib/*.py"]
+extraPaths = ["../react-tk", "../keyweave"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

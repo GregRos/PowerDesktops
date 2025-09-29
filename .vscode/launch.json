@@ -19,19 +19,10 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "ui_test",
+      "name": "power_desktop",
       "type": "debugpy",
       "request": "launch",
-      "module": "src.ui_test",
-      "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}",
-      "justMyCode": false
-    },
-    {
-      "name": "Main",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "main.pyw",
+      "module": "power_desktop",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "justMyCode": false

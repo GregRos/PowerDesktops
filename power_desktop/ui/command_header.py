@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import override
 
-from react_tk import (  # pyright: ignore[reportMissingTypeStubs]
+from react_tk import (
     Component,
     Widget,
     Font,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyvda import (  # pyright: ignore[reportMissingTypeStubs]
+from pyvda import (
     AppView,
     VirtualDesktop,
     get_virtual_desktops,

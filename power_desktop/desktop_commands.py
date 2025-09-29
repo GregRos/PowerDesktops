@@ -1,15 +1,15 @@
-from keyweave import (  # pyright: ignore[reportMissingTypeStubs]
+from keyweave import (
     key,
     command,
     HotkeyEvent,
 )
 
-from desktop_model.model_1d import Desktop1D, Index1D
+from power_desktop.model_1d import Desktop1D, Index1D
 from power_desktop.util.windows import get_related_windows
 from power_desktop.disable_caps import force_caps_off
 from pyvda import AppView  # pyright: ignore[reportMissingTypeStubs]
-from react_tk import WindowRoot  # pyright: ignore[reportMissingTypeStubs]
-from keyweave import (  # pyright: ignore[reportMissingTypeStubs]
+from react_tk import WindowRoot
+from keyweave import (
     LayoutClass,
     HotkeyInterceptionEvent,
 )
@@ -20,8 +20,13 @@ class DesktopBindings(LayoutClass):
     _model = Desktop1D()
     _root: WindowRoot
 
+    def __post_init__(self):
+        from power_desktop.ui import root
+
+        self._root = root.window_root
+
     def __intercept__(self, hk: HotkeyInterceptionEvent):
-        self._root(executed=hk.next())
+        self._root(executed=hk.next(), hidden=False)
 
     @property
     def current_vd(self):
