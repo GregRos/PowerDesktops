@@ -1,5 +1,9 @@
+# Turn off pyright strict checking for this file
+
 import re
-from pywinauto import WindowSpecification, Application
+
+# pyright: standard
+from pywinauto import Application
 from pywinauto.win32_element_info import HwndElementInfo
 
 from pyvda import AppView, VirtualDesktop, get_virtual_desktops
@@ -7,16 +11,12 @@ from pyvda import AppView, VirtualDesktop, get_virtual_desktops
 pat = re.compile(" - (\\S*)(?: \\(Workspace\\))? - (Visual Studio Code|Obsidian)")
 
 
-def get_window_substr(hinfo: HwndElementInfo):
+def _get_window_substr(hinfo: HwndElementInfo):
     txt = hinfo.name
     m = pat.search(txt)
     if m:
         return m.group(1)
     return None
-
-
-def get_info(av: AppView):
-    return HwndElementInfo
 
 
 def get_related_windows(
@@ -25,7 +25,7 @@ def get_related_windows(
     def f():
         hinfo = HwndElementInfo(av.hwnd)
         yield hinfo, av
-        substr = get_window_substr(hinfo)
+        substr = _get_window_substr(hinfo)
         if not substr:
             return []
         proc = hinfo.process_id

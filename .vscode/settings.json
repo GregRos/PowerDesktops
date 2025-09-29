@@ -1,5 +1,5 @@
 {
-  "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.typeCheckingMode": "strict",
   "python.analysis.indexing": true,
   "python.analysis.autoImportCompletions": true,
   "python.analysis.exclude": ["**/site-packages/**"],

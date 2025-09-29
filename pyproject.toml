@@ -1,24 +1,25 @@
 [tool.poetry]
-name = "powerkeys"
+name = "power_desktop"
 version = "0.1.0"
-description = "Keyboard macros and commands for Spotify and Windows automation."
-authors = ["Your Name <you@example.com>"]
+description = "Windows desktop switching using WASD-based hotkeys."
+authors = ["GregRos <gregros@gregros.dev>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13"
 spotipy = "^2.24.0"
 colorama = "^0.4.6"
 comtypes = "^1.4.7"
 keyboard = "^0.13.5"
 pycaw = "^20240210"
-pywin32 = "^308"
+pywin32 = "^311"
 pyvda = "^0.4.3"
 pywinauto = "^0.6.8"
 typeguard = "^4.3.0"
 python-benedict = "^0.33.2"
-pykeys = { path = "../pykeys", develop = true }
+react-tk = { path = "../react-tk" }
+keyweave = { path = "../keyweave" }
 
 
 [build-system]

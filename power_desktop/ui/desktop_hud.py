@@ -1,17 +1,18 @@
-from asyncio import sleep
-import ctypes
 from dataclasses import dataclass
-import itertools
-from typing import Any, Literal, override
+from typing import Any, override
 
 
-from client.error import FailDisplay
-from client.media.media_display import MediaDisplay, truncate_text
-from client.media.media_types import MediaStageMessage
-from reactk import Label, Font, Widget, Component, Ctx, Window
+from react_tk import (  # pyright: ignore[reportMissingTypeStubs]
+    Label,
+    Font,
+    Widget,
+    Component,
+    Window,
+)
 
-from destkop_keys.ui.command_header import DesktopCommandHeader
-from destkop_keys.ui.desktop_status import App, DesktopActionReport
+from power_desktop.ui.command_header import DesktopCommandHeader
+from power_desktop.ui.desktop_status import App, DesktopActionReport
+from power_desktop.util.str import truncate_text
 
 justify = 24
 
@@ -22,26 +23,26 @@ old_desktop_c = "#3A467E"
 @dataclass
 class DestkopHUD(Component[Window]):
 
-    def render(self, yld, ctx):
-        if ctx.hidden == True:
-            return
-        yld(
-            Window(
-                background="#000000",
-                topmost=True,
-                transparent_color="black",
-                override_redirect=True,
-            )
-            .Geometry(width=420, height=250, x=-5, y=-85, anchor_point="rb")
-            .child(self.Inner(executed=ctx.executed))
-        )
+    def render(self):
+        if self.ctx.hidden == True:
+            return ()
+        return Window(
+            background="#000000",
+            topmost=True,
+            transparent_color="black",
+            override_redirect=True,
+        ).Geometry(width=420, height=250, x=-5, y=-85, anchor_point="rb")[
+            self.Inner(executed=self.ctx.executed)
+        ]
 
     @dataclass
     class Inner(Component[Widget]):
         executed: DesktopActionReport
 
-        def _win_title(self, cmd: DesktopExec, apps: tuple[App, ...]):
-            titles = list(map(lambda x: f"{cmd.command.label} {x.title}", apps))
+        def _win_title(self, cmd: DesktopActionReport, apps: tuple[App, ...]):
+            titles = list(
+                map(lambda x: f"{cmd.event.command.info.label} {x.title}", apps)
+            )
             elipsis = None
             if len(titles) > 3:
                 titles = titles[:3]
@@ -65,14 +66,14 @@ class DestkopHUD(Component[Window]):
                 ).Pack(ipadx=0, fill="x")
 
         @override
-        def render(self, yld, _):
+        def render(self):
             result = self.executed
-            yld(DesktopCommandHeader(input=result))
             orig_desktop = (
                 result.shove.start if result.shove else result.pan.start  # type: ignore
             )
             new_desktop = result.shove.end if result.shove else result.pan.end  # type: ignore
-            yld(
+            all: list[Any] = [
+                DesktopCommandHeader(input=result),
                 Label(
                     text=f"🖥️ {new_desktop.name}{" 👁️" if result.pan else ""}",
                     background=green_c,
@@ -82,12 +83,13 @@ class DestkopHUD(Component[Window]):
                         size=17,
                         style="normal",
                     ),
-                ).Pack(ipadx=15, fill="both")
-            )
-            if result.shove:
-                yld(self._win_title(self.executed, result.shove.apps))
+                ).Pack(ipadx=15, fill="both"),
+            ]
 
-            yld(
+            if result.shove:
+                all.append(self._win_title(self.executed, result.shove.apps))
+
+            all.append(
                 Label(
                     text=f"↩️ {orig_desktop.geometry}",
                     background=old_desktop_c,
@@ -100,3 +102,4 @@ class DestkopHUD(Component[Window]):
                     ),
                 ).Pack(ipadx=15, fill="x")
             )
+            return all

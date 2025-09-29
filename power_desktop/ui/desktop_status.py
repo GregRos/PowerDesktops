@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 
-from pyvda import VirtualDesktop, AppView
-from win32gui import GetWindowText
-from pywinauto.win32_element_info import HwndElementInfo
-from pykeys import HotkeyEvent
+from pywinauto.win32_element_info import (  # pyright: ignore[reportMissingTypeStubs]
+    HwndElementInfo,
+)
+from keyweave import HotkeyEvent  # pyright: ignore[reportMissingTypeStubs]
 from desktop_model.model_1d import Index1D
 
 
@@ -16,8 +16,8 @@ class App:
     hwnd: int
 
     def __init__(self, hwnd_info: HwndElementInfo):
-        self.hwnd = hwnd_info.handle
-        self.title = hwnd_info.name
+        self.hwnd = hwnd_info.handle  # type: ignore
+        self.title = hwnd_info.name  # type: ignore
 
 
 class Pan(DesktopAction):
