@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "powerkeys"
+version = "0.1.0"
+description = "Keyboard macros and commands for Spotify and Windows automation."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+spotipy = "^2.24.0"
+colorama = "^0.4.6"
+comtypes = "^1.4.7"
+keyboard = "^0.13.5"
+pycaw = "^20240210"
+pywin32 = "^308"
+pyvda = "^0.4.3"
+pywinauto = "^0.6.8"
+typeguard = "^4.3.0"
+python-benedict = "^0.33.2"
+pykeys = { path = "../pykeys", develop = true }
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
