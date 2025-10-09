@@ -1,12 +1,11 @@
 from logging import getLogger
-from typing import Any
 from keyweave import (
     key,
     command,
     HotkeyEvent,
 )
 
-from power_desktop.model_1d import Desktop1D, Index1D
+from power_desktop.model.model_1d import Desktop1D, Index1D
 from power_desktop.util.str import get_number_emoji
 from power_desktop.util.windows import get_related_windows
 from power_desktop.disable_caps import force_caps_off
@@ -29,7 +28,7 @@ def reinit_vda_managers():
     logger.info("Reinitialized VDA managers")
 
 
-class DesktopBindings(LayoutClass):
+class PowerDesktopLayout(LayoutClass):
     _model = Desktop1D()
     _root: WindowRoot
 

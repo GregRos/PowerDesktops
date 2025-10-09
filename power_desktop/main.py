@@ -1,7 +1,5 @@
-from asyncio import futures
-import pdb
 import traceback
-from power_desktop.desktop_commands import DesktopBindings
+from power_desktop.desktop_commands import PowerDesktopLayout
 from threading import Event
 from power_desktop.setup_logging import (
     setup_logging,
@@ -17,7 +15,7 @@ setup_logging()
 
 
 def start():
-    with DesktopBindings(
+    with PowerDesktopLayout(
         on_error=postmortem_debug,
     ):
         try:

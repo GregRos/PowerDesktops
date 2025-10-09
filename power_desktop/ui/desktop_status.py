@@ -4,7 +4,7 @@ from pywinauto.win32_element_info import (  # pyright: ignore[reportMissingTypeS
     HwndElementInfo,
 )
 from keyweave import HotkeyEvent
-from power_desktop.model_1d import Index1D
+from power_desktop.model.model_1d import Index1D
 
 
 class DesktopAction:

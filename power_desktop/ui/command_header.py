@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import override
 
-from react_tk import Component, Widget, Font, Label, ToolTipLabel
+from react_tk import Component, Widget, Font, ToolTipLabel
 
 from power_desktop.ui.desktop_status import DesktopActionReport
 

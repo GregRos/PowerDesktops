@@ -3,7 +3,6 @@ from typing import Any, override
 
 
 from react_tk import (
-    Label,
     Font,
     Widget,
     Component,
