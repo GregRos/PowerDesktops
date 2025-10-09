@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from pywinauto.win32_element_info import (
+from pywinauto.win32_element_info import (  # pyright: ignore[reportMissingTypeStubs]
     HwndElementInfo,
 )
 from keyweave import HotkeyEvent

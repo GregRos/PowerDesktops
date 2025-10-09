@@ -1,3 +1,5 @@
+from logging import getLogger
+from typing import Any
 from keyweave import (
     key,
     command,
@@ -15,11 +17,25 @@ from keyweave import (
     HotkeyInterceptionEvent,
 )
 from power_desktop.ui.desktop_status import DesktopActionReport, Pan, Shove
+import _ctypes
+
+logger = getLogger("power_desktop")
+
+
+def reinit_vda_managers():
+    import pyvda.pyvda  # pyright: ignore[reportMissingTypeStubs]
+
+    pyvda.pyvda.managers.__init__()  # type: ignore
+    logger.info("Reinitialized VDA managers")
 
 
 class DesktopBindings(LayoutClass):
     _model = Desktop1D()
     _root: WindowRoot
+
+    @property
+    def ctx(self):
+        return self._root.ctx
 
     def __post_init__(self):
         from power_desktop.ui import root
@@ -27,10 +43,22 @@ class DesktopBindings(LayoutClass):
         self._root = root.window_root
 
     def __intercept__(self, hk: HotkeyInterceptionEvent):
-        ev = hk.next()
+        try:
+            ev = hk.next()
+        except _ctypes.COMError as e:
+            logger.warning(
+                f"Caught COMError, trying to recover by reinitializing VDA managers. {e}"
+            )
+            reinit_vda_managers()
+            ev = hk.next()
+            logger.info("Recovered from COMError.")
+
         if ev:
             self._root(executed=ev, hidden=False)
-            self._root.ctx.schedule(lambda _: self._root(hidden=True), 3.0)
+
+            @self.ctx.schedule(delay=1, name="hide")
+            def _():
+                self._root(hidden=True)
 
     @property
     def current_vd(self):
@@ -39,7 +67,7 @@ class DesktopBindings(LayoutClass):
     # Disable CapsLock
     # =========================================
     @(key.capslock)
-    @command("no caps", description="disables capslock", emoji="🚫")
+    @command(description="disables capslock", emoji="🚫")
     def no_caps(self, event: HotkeyEvent):
         """
         Disables capslock to use as a modifier key
@@ -67,7 +95,9 @@ class DesktopBindings(LayoutClass):
         infos, avs = get_related_windows(AppView.current())
         for av in avs:
             av.move(target_vd)
-        return DesktopActionReport(event, shove=Shove(infos, self.current_vd, desktop))
+        return DesktopActionReport(
+            event, shove=Shove(infos, self.current_vd, desktop)
+        )
 
     def _drag_to(self, event: HotkeyEvent, desktop: Index1D | int):
 
@@ -86,27 +116,25 @@ class DesktopBindings(LayoutClass):
     # Directional desktop switching
     # =========================================
     @(key.a & [key.capslock])
-    @command("PanLeft", description="pans left", emoji="👁️⬅️")
+    @command(description="pans left", emoji="👁️⬅️")
     def pan_left(self, event: HotkeyEvent):
         return self._pan_to(event, self.current_vd.left)
 
     @(key.d.down & [key.capslock])
-    @command("PanRight", description="pans right", emoji="👁️➡️")
+    @command(description="pans right", emoji="👁️➡️")
     def pan_right(self, event: HotkeyEvent):
         return self._pan_to(event, self.current_vd.right)
 
-    @(key.a.down & [key.capslock, key.mouse_1])
+    @(key.a.down & [key.capslock, key.mouse_2])
     @command(
-        "ShoveLeft",
         description="moves the current window to $desktop - 1$ without panning",
         emoji="🫷📅",
     )
     def shove_left(self, event: HotkeyEvent):
         return self._shove_to(event, self.current_vd.left)
 
-    @(key.d.down & [key.capslock, key.mouse_1])
+    @(key.d.down & [key.capslock, key.mouse_2])
     @command(
-        "ShoveRight",
         description="moves the current window to the $desktop + 1$ without panning",
         emoji="🫸📅",
     )
@@ -115,7 +143,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d.down & [key.capslock, key.mouse_1])
     @command(
-        "DragRight",
         description="moves the current window to right desktop and pans",
         emoji="🫱📅",
     )
@@ -124,7 +151,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.a.down & [key.capslock, key.mouse_1])
     @command(
-        "DragLeft",
         description="moves the current window to left desktop and pans",
         emoji="🫲📅",
     )
@@ -135,7 +161,6 @@ class DesktopBindings(LayoutClass):
     # =========================================
     @(key.q.down & [key.capslock])
     @command(
-        "undo pan",
         description="returns to the previous desktop before a pan action",
         emoji="👁️↩️",
     )
@@ -144,7 +169,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.r.down & [key.capslock])
     @command(
-        "redo pan",
         description="returns to a previous desktop after an undo pan action",
         emoji="👁️↪️",
     )
@@ -152,13 +176,12 @@ class DesktopBindings(LayoutClass):
         pass
 
     @(key.z.down & [key.capslock])
-    @command("undo move", description="reverts the last move action", emoji="📦↩️")
+    @command(description="reverts the last move action", emoji="📦↩️")
     def undo_move(self, event: HotkeyEvent):
         pass
 
     @(key.c.down & [key.capslock])
     @command(
-        "redo move",
         description="reapplies the last move action after an undo move action",
         emoji="📦↪️",
     )
@@ -168,71 +191,52 @@ class DesktopBindings(LayoutClass):
     # Direct desktop switching
     # =========================================
     @(key.d_1.down & [key.capslock])
-    @command(
-        "pan to 1", description="pans to desktop 1", emoji=f"👁️{get_number_emoji(1)}"
-    )
+    @command(description="pans to desktop 1", emoji=f"👁️{get_number_emoji(1)}")
     def pan_to_1(self, event: HotkeyEvent):
         return self._pan_to(event, 1)
 
     @(key.d_2.down & [key.capslock])
-    @command(
-        "pan to 2", description="pans to desktop 2", emoji=f"👁️{get_number_emoji(2)}"
-    )
+    @command(description="pans to desktop 2", emoji=f"👁️{get_number_emoji(2)}")
     def pan_to_2(self, event: HotkeyEvent):
         return self._pan_to(event, 2)
 
     @(key.d_3.down & [key.capslock])
-    @command(
-        "pan to 3", description="pans to desktop 3", emoji=f"👁️{get_number_emoji(3)}"
-    )
+    @command(description="pans to desktop 3", emoji=f"👁️{get_number_emoji(3)}")
     def pan_to_3(self, event: HotkeyEvent):
         return self._pan_to(event, 3)
 
     @(key.d_4.down & [key.capslock])
-    @command(
-        "pan to 4", description="pans to desktop 4", emoji=f"👁️{get_number_emoji(4)}"
-    )
+    @command(description="pans to desktop 4", emoji=f"👁️{get_number_emoji(4)}")
     def pan_to_4(self, event: HotkeyEvent):
         return self._pan_to(event, 4)
 
     @(key.d_5.down & [key.capslock])
-    @command(
-        "pan to 5", description="pans to desktop 5", emoji=f"👁️{get_number_emoji(5)}"
-    )
+    @command(description="pans to desktop 5", emoji=f"👁️{get_number_emoji(5)}")
     def pan_to_5(self, event: HotkeyEvent):
         return self._pan_to(event, 5)
 
     @(key.d_6.down & [key.capslock])
-    @command(
-        "pan to 6", description="pans to desktop 6", emoji=f"👁️{get_number_emoji(6)}"
-    )
+    @command(description="pans to desktop 6", emoji=f"👁️{get_number_emoji(6)}")
     def pan_to_6(self, event: HotkeyEvent):
         return self._pan_to(event, 6)
 
     @(key.d_7.down & [key.capslock])
-    @command(
-        "pan to 7", description="pans to desktop 7", emoji=f"👁️{get_number_emoji(7)}"
-    )
+    @command(description="pans to desktop 7", emoji=f"👁️{get_number_emoji(7)}")
     def pan_to_7(self, event: HotkeyEvent):
         return self._pan_to(event, 7)
 
     @(key.d_8.down & [key.capslock])
-    @command(
-        "pan to 8", description="pans to desktop 8", emoji=f"👁️{get_number_emoji(8)}"
-    )
+    @command(description="pans to desktop 8", emoji=f"👁️{get_number_emoji(8)}")
     def pan_to_8(self, event: HotkeyEvent):
         return self._pan_to(event, 8)
 
     @(key.d_9.down & [key.capslock])
-    @command(
-        "pan to 9", description="pans to desktop 9", emoji=f"👁️{get_number_emoji(9)}"
-    )
+    @command(description="pans to desktop 9", emoji=f"👁️{get_number_emoji(9)}")
     def pan_to_9(self, event: HotkeyEvent):
         return self._pan_to(event, 9)
 
     @(key.d_1.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 1",
         description="moves the current window to desktop 1 and pans to it",
         emoji=f"📅🫱{get_number_emoji(1)}",
     )
@@ -241,7 +245,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_2.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 2",
         description="moves the current window to desktop 2 and pans to it",
         emoji=f"📅🫱{get_number_emoji(2)}",
     )
@@ -250,7 +253,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_3.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 3",
         description="moves the current window to desktop 3 and pans to it",
         emoji=f"📅🫱{get_number_emoji(3)}",
     )
@@ -259,7 +261,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_4.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 4",
         description="moves the current window to desktop 4 and pans to it",
         emoji=f"📅🫱{get_number_emoji(4)}",
     )
@@ -268,7 +269,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_5.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 5",
         description="moves the current window to desktop 5 and pans to it",
         emoji=f"📅🫱{get_number_emoji(5)}",
     )
@@ -277,7 +277,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_6.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 6",
         description="moves the current window to desktop 6 and pans to it",
         emoji=f"📅🫱{get_number_emoji(6)}",
     )
@@ -286,7 +285,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_7.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 7",
         description="moves the current window to desktop 7 and pans to it",
         emoji=f"📅🫱{get_number_emoji(7)}",
     )
@@ -295,7 +293,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_8.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 8",
         description="moves the current window to desktop 8 and pans to it",
         emoji=f"📅🫱{get_number_emoji(8)}",
     )
@@ -304,7 +301,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_9.down & [key.capslock, key.mouse_1])
     @command(
-        "drag to 9",
         description="moves the current window to desktop 9 and pans to it",
         emoji=f"📅🫱{get_number_emoji(9)}",
     )
@@ -313,7 +309,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_1.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 1",
         description="moves the current window to desktop 1 without panning",
         emoji=f"🫸📅{get_number_emoji(1)}",
     )
@@ -322,7 +317,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_2.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 2",
         description="moves the current window to desktop 2 without panning",
         emoji=f"🫸📅{get_number_emoji(2)}",
     )
@@ -331,7 +325,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_3.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 3",
         description="moves the current window to desktop 3 without panning",
         emoji=f"🫸📅{get_number_emoji(3)}",
     )
@@ -340,7 +333,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_4.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 4",
         description="moves the current window to desktop 4 without panning",
         emoji=f"🫸📅{get_number_emoji(4)}",
     )
@@ -349,7 +341,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_5.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 5",
         description="moves the current window to desktop 5 without panning",
         emoji=f"🫸📅{get_number_emoji(5)}",
     )
@@ -358,7 +349,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_6.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 6",
         description="moves the current window to desktop 6 without panning",
         emoji=f"🫸📅{get_number_emoji(6)}",
     )
@@ -367,7 +357,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_7.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 7",
         description="moves the current window to desktop 7 without panning",
         emoji=f"🫸📅{get_number_emoji(7)}",
     )
@@ -376,7 +365,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_8.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 8",
         description="moves the current window to desktop 8 without panning",
         emoji=f"🫸📅{get_number_emoji(8)}",
     )
@@ -385,7 +373,6 @@ class DesktopBindings(LayoutClass):
 
     @(key.d_9.down & [key.capslock, key.mouse_2])
     @command(
-        "shove to 9",
         description="moves the current window to desktop 9 without panning",
         emoji=f"🫸📅{get_number_emoji(9)}",
     )

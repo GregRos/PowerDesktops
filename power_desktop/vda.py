@@ -1,7 +1,11 @@
 from threading import Thread
 from typing import Any
 import keyboard
-from pyvda import AppView, VirtualDesktop, get_virtual_desktops
+from pyvda import (  # pyright: ignore[reportMissingTypeStubs]
+    AppView,
+    VirtualDesktop,
+    get_virtual_desktops,
+)
 
 
 number_of_active_desktops = len(get_virtual_desktops())

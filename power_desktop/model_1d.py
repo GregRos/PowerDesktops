@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyvda import (
+from pyvda import (  # pyright: ignore[reportMissingTypeStubs]
     AppView,
     VirtualDesktop,
     get_virtual_desktops,
@@ -17,12 +17,12 @@ class VirtualDesktopGeometry1D:
         return Index1D(self.loop(index) if loop else self.check(index), self)
 
     def check(self, index: int):
-        if index < 0 or index >= self.total:
+        if index < 1 or index > self.total:
             raise ValueError("Index out of bounds")
         return index
 
     def loop(self, index: int):
-        return index % self.total
+        return ((index - 1) % self.total) + 1
 
 
 @dataclass
@@ -33,7 +33,7 @@ class Index1D:
     @property
     def name(self):
         name = self.get_vd().name
-        return name if name else f"Desktop {self.index + 1}"
+        return name if name else f"Desktop {self.index}"
 
     def __int__(self):
         return self.index

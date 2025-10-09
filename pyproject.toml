@@ -1,28 +1,28 @@
 [tool.poetry]
 name = "power_desktop"
-version = "0.1.0"
+version = "0.1.1"
 description = "Windows desktop switching using WASD-based hotkeys."
 authors = ["GregRos <gregros@gregros.dev>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
-spotipy = "^2.24.0"
+python = ">=3.13,<3.15"
 colorama = "^0.4.6"
-comtypes = "^1.4.7"
 keyboard = "^0.13.5"
-pycaw = "^20240210"
-pywin32 = "^311"
 pyvda = "^0.4.3"
 pywinauto = "^0.6.8"
-typeguard = "^4.3.0"
-python-benedict = "^0.33.2"
-react-tk = { path = "../react-tk", develop = true }
-keyweave = { path = "../keyweave", develop = true }
+react-tk = "^0.4.2"
+keyweave = "^0.16.1"
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.16.0"
+black = "^25.9.0"
+pyright = "^1.1.406"
 
 [tool.poetry.scripts]
 power-desktop = "power_desktop.main:start"
+exe = "scripts.build:pyi"
 
 [tool.pyright]
 typeCheckingMode = "strict"
@@ -36,3 +36,6 @@ extraPaths = ["../react-tk", "../keyweave"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80

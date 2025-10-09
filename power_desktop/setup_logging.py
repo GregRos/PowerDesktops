@@ -32,14 +32,15 @@ class CustomFormatter(logging.Formatter):
     }
 
     def _get_name_emoji(self, name: str):
-        match name:
-            case "keyboard":
+
+        match name.split(".")[0]:
+            case "keyweave":
                 return "#️⃣ "
             case "server":
                 return "⚙️ "
             case "client":
                 return "🎮"
-            case "ui":
+            case "react_tk":
                 return "📱"
             case _:
                 return "❓"
@@ -60,4 +61,11 @@ def setup_logging():
     file_handler = logging.FileHandler("log.log", encoding="utf-8")
     # Add the console handler to the logger
     logging.basicConfig(handlers=[ch, file_handler], level=logging.INFO)
-    logging.getLogger("react_tk").setLevel(logging.DEBUG)
+    logger_names = [
+        "react_tk",
+        "keyweave",
+        "power_desktop",
+    ]
+    loggers = [logging.getLogger(name) for name in logger_names]
+    for logger in loggers:
+        logger.setLevel(logging.WARNING)
