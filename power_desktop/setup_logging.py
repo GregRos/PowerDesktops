@@ -68,4 +68,4 @@ def setup_logging():
     ]
     loggers = [logging.getLogger(name) for name in logger_names]
     for logger in loggers:
-        logger.setLevel(logging.WARNING)
+        logger.setLevel(logging.INFO)

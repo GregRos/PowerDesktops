@@ -13,25 +13,6 @@ files = [
 ]
 
 [[package]]
-name = "beautifultable"
-version = "1.1.0"
-description = "Print text tables for terminals"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "beautifultable-1.1.0-py2.py3-none-any.whl", hash = "sha256:b34053a581976c4c23064bb0e918a7f6f22273cf196c787946db323a6a2b7d84"},
-    {file = "beautifultable-1.1.0.tar.gz", hash = "sha256:040bc987444965678f4ffdfa2f17ac357f1a13e5875b161c9a1899b375319d17"},
-]
-
-[package.dependencies]
-wcwidth = "*"
-
-[package.extras]
-all = ["pandas"]
-dev = ["pandas"]
-
-[[package]]
 name = "black"
 version = "25.9.0"
 description = "The uncompromising code formatter."
@@ -180,21 +161,19 @@ pyobjc = {version = "*", markers = "sys_platform == \"darwin\""}
 
 [[package]]
 name = "keyweave"
-version = "0.16.1"
+version = "0.17.0"
 description = "Framework for defining global hotkeys."
 optional = false
 python-versions = "<4.0,>=3.13"
 groups = ["main"]
 files = [
-    {file = "keyweave-0.16.1-py3-none-any.whl", hash = "sha256:2d3f7f9666635edd8eabb4a17743916e2316bb66520ac27d69e6bc4c399549d9"},
-    {file = "keyweave-0.16.1.tar.gz", hash = "sha256:bbab0819aa4aa17868f0c8561ab8eb7bc26c9eeb807d262875f95eb1d93b52ea"},
+    {file = "keyweave-0.17.0-py3-none-any.whl", hash = "sha256:cdb38f2afa6fd6cea7a80ecceb6b5f98c303eece8f8956b981689793bddb4b46"},
+    {file = "keyweave-0.17.0.tar.gz", hash = "sha256:c6a660c49200df0eebd08627f75a08ffa7a096d77c37223222f4235865661b02"},
 ]
 
 [package.dependencies]
-beautifultable = ">=1.1.0,<2.0.0"
 keyboard = ">=0.13.5,<0.14.0"
 mouse = {version = ">=0.7.1,<0.8.0", markers = "sys_platform != \"win32\""}
-prettytable = ">=3.12.0,<4.0.0"
 pyee = ">=13.0.0,<14.0.0"
 python-baseconv = ">=1.2.2,<2.0.0"
 pywin32 = {version = ">=311,<312", markers = "sys_platform == \"win32\""}
@@ -306,24 +285,6 @@ files = [
 docs = ["furo (>=2025.9.25)", "proselint (>=0.14)", "sphinx (>=8.2.3)", "sphinx-autodoc-typehints (>=3.2)"]
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.4.2)", "pytest-cov (>=7)", "pytest-mock (>=3.15.1)"]
 type = ["mypy (>=1.18.2)"]
-
-[[package]]
-name = "prettytable"
-version = "3.16.0"
-description = "A simple Python library for easily displaying tabular data in a visually appealing ASCII table format"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "prettytable-3.16.0-py3-none-any.whl", hash = "sha256:b5eccfabb82222f5aa46b798ff02a8452cf530a352c31bddfa29be41242863aa"},
-    {file = "prettytable-3.16.0.tar.gz", hash = "sha256:3c64b31719d961bf69c9a7e03d0c1e477320906a98da63952bc6698d6164ff57"},
-]
-
-[package.dependencies]
-wcwidth = "*"
-
-[package.extras]
-tests = ["pytest", "pytest-cov", "pytest-lazy-fixtures"]
 
 [[package]]
 name = "pyee"
@@ -4210,14 +4171,14 @@ files = [
 
 [[package]]
 name = "react-tk"
-version = "0.4.2"
+version = "0.4.3"
 description = "Build Tkinter apps the React way"
 optional = false
 python-versions = "<4.0,>=3.12"
 groups = ["main"]
 files = [
-    {file = "react_tk-0.4.2-py3-none-any.whl", hash = "sha256:1d57b03675d26507ea77338466b702bd3bae05e34cf65e554c1d9ecc618f905b"},
-    {file = "react_tk-0.4.2.tar.gz", hash = "sha256:109b793b985d27ffb55415a5cff4962199fa2c9c9fc4df03cace299995697f77"},
+    {file = "react_tk-0.4.3-py3-none-any.whl", hash = "sha256:1d757c8bc929199fe42990297ce9f4001ed4306c62994938f97d22b723cfd99e"},
+    {file = "react_tk-0.4.3.tar.gz", hash = "sha256:c4f356300865600d9ba7dc96dd8c6af1c9600f6675a4f9d1e95886f13475cd3f"},
 ]
 
 [package.dependencies]
@@ -4302,19 +4263,7 @@ files = [
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
 ]
 
-[[package]]
-name = "wcwidth"
-version = "0.2.14"
-description = "Measures the displayed width of unicode strings in a terminal"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "wcwidth-0.2.14-py2.py3-none-any.whl", hash = "sha256:a7bb560c8aee30f9957e5f9895805edd20602f2d7f720186dfd906e82b4982e1"},
-    {file = "wcwidth-0.2.14.tar.gz", hash = "sha256:4d478375d31bc5395a3c55c40ccdf3354688364cd61c4f6adacaa9215d0b3605"},
-]
-
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.15"
-content-hash = "46a976a0dd1ba31eaef6518d46c35988bf8644248af48c684ddc40631cd9e22f"
+content-hash = "a3a8e21e692269b9a0940f144fd075eec3ae6fda587c2bc6dd901b36b592ac9a"
