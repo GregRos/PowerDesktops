@@ -7,7 +7,7 @@ from keyweave import HotkeyEvent
 from power_desktop.model.model_1d import Index1D
 
 
-class DesktopAction:
+class DesktopActionReal:
     pass
 
 
@@ -20,7 +20,7 @@ class App:
         self.title = hwnd_info.name  # type: ignore
 
 
-class Pan(DesktopAction):
+class Pan(DesktopActionReal):
     start: Index1D
     end: Index1D
 
@@ -29,7 +29,7 @@ class Pan(DesktopAction):
         self.end = end
 
 
-class Shove(DesktopAction):
+class Shove(DesktopActionReal):
 
     def __init__(
         self,
@@ -49,7 +49,16 @@ class Shove(DesktopAction):
 
 
 @dataclass
-class DesktopActionReport:
+class DesktopActionFail:
+    event: HotkeyEvent
+    error: BaseException
+
+
+@dataclass
+class DesktopActionOkay:
     event: HotkeyEvent
     pan: Pan | None = field(default=None)
     shove: Shove | None = field(default=None)
+
+
+type DesktopAction = DesktopActionOkay | DesktopActionFail

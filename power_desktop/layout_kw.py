@@ -1,31 +1,40 @@
 from logging import getLogger
+
 from keyweave import (
     key,
     command,
     HotkeyEvent,
 )
 
-from power_desktop.model.model_1d import Desktop1D, Index1D
+from power_desktop.tools.exec_reinit_vda_managers import (
+    exec_reinit_vda_managers,
+    wrap_reinit_vda_managers,
+)
+from power_desktop.model.model_1d import (
+    Desktop1D,
+    Index1D,
+)
+from power_desktop.tools.undo_buffer import UndoBuffer
 from power_desktop.util.str import get_number_emoji
 from power_desktop.util.windows import get_related_windows
-from power_desktop.disable_caps import force_caps_off
+from power_desktop.tools.disable_caps import force_caps_off
 from pyvda import AppView  # pyright: ignore[reportMissingTypeStubs]
 from react_tk import WindowRoot
 from keyweave import (
     LayoutClass,
     HotkeyInterceptionEvent,
 )
-from power_desktop.ui.desktop_status import DesktopActionReport, Pan, Shove
-import _ctypes
+from power_desktop.ui.desktop_status import (
+    DesktopActionFail,
+    DesktopActionOkay,
+    Pan,
+    Shove,
+)
+from apscheduler.schedulers.background import (  # pyright: ignore[reportMissingTypeStubs]
+    BackgroundScheduler,
+)
 
 logger = getLogger("power_desktop")
-
-
-def reinit_vda_managers():
-    import pyvda.pyvda  # pyright: ignore[reportMissingTypeStubs]
-
-    pyvda.pyvda.managers.__init__()  # type: ignore
-    logger.info("Reinitialized VDA managers")
 
 
 class PowerDesktopLayout(LayoutClass):
@@ -39,32 +48,45 @@ class PowerDesktopLayout(LayoutClass):
     def __post_init__(self):
         from power_desktop.ui import root
 
+        self._buffer = UndoBuffer(
+            self._model.current.to_history_entry(), maxlen=100
+        )
+
+        def keep_track_of_history():
+            self._buffer.push(self._model.current.to_history_entry())
+
         self._root = root.window_root
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(  # type: ignore
+            wrap_reinit_vda_managers(keep_track_of_history),
+            "interval",
+            seconds=1,
+        )
+        scheduler.start()  # type: ignore
 
     def __intercept__(self, hk: HotkeyInterceptionEvent):
         try:
-            ev = hk.next()
-        except _ctypes.COMError as e:
-            logger.warning(
-                f"Caught COMError, trying to recover by reinitializing VDA managers. {e}"
-            )
-            reinit_vda_managers()
-            ev = hk.next()
-            logger.info("Recovered from COMError.")
-
+            ev = exec_reinit_vda_managers(hk.next)
+        except BaseException as e:
+            ev = DesktopActionFail(hk, e)
+        else:
+            if (
+                hk.command.info.metadata != "history"
+                and isinstance(ev, DesktopActionOkay)
+                and ev.pan
+            ):
+                self._buffer.push(ev.pan.end.to_history_entry())
         if ev:
             self._root(executed=ev, hidden=False)
 
-            @self.ctx.schedule(delay=1, name="hide")
-            def _():
-                self._root(hidden=True)
+        @self.ctx.schedule(delay=1, name="hide")
+        def _():
+            self._root(hidden=True)
 
     @property
     def current_vd(self):
         return self._model.current
 
-    # Disable CapsLock
-    # =========================================
     @(key.capslock)
     @command(description="disables capslock", emoji="🚫")
     def no_caps(self, event: HotkeyEvent):
@@ -76,15 +98,17 @@ class PowerDesktopLayout(LayoutClass):
     # Desktop switching commands
     # =========================================
     def _pan_to(self, event: HotkeyEvent, desktop: Index1D | int):
+        start_vd = self.current_vd
         """
         Switches to the desktop at the given position (no looping)
         """
         desktop = self._model.at(desktop)
         target_vd = desktop.get_vd()
         target_vd.go()
-        return DesktopActionReport(event, pan=Pan(self.current_vd, desktop))
+        return DesktopActionOkay(event, pan=Pan(start_vd, desktop))
 
     def _shove_to(self, event: HotkeyEvent, desktop: Index1D | int):
+        start_vd = self.current_vd
         """
         Moves the current window to the desktop at the given position, optionally modulo
         No desktop switching occurs
@@ -94,23 +118,43 @@ class PowerDesktopLayout(LayoutClass):
         infos, avs = get_related_windows(AppView.current())
         for av in avs:
             av.move(target_vd)
-        return DesktopActionReport(
-            event, shove=Shove(infos, self.current_vd, desktop)
-        )
+        return DesktopActionOkay(event, shove=Shove(infos, start_vd, desktop))
 
     def _drag_to(self, event: HotkeyEvent, desktop: Index1D | int):
-
+        start_vd = self.current_vd
         desktop = self._model.at(desktop)
         target_vd = desktop.get_vd()
         infos, avs = get_related_windows(AppView.current())
         for current in avs:
             current.move(target_vd)
         target_vd.go()
-        return DesktopActionReport(
+        return DesktopActionOkay(
             event,
-            pan=Pan(self.current_vd, desktop),
-            shove=Shove(infos, self.current_vd, desktop),
+            pan=Pan(start_vd, desktop),
+            shove=Shove(infos, start_vd, desktop),
         )
+
+    @(key.q & [key.capslock])
+    @command(
+        description="returns to the previous desktop before a pan action",
+        emoji="👁️↩️",
+        metadata="history",
+    )
+    def undo_pan(self, event: HotkeyEvent):
+        entry = self._buffer.undo()
+        entry.go()
+        return DesktopActionOkay(event, pan=Pan(self.current_vd, entry.desktop))
+
+    @(key.r.down & [key.capslock])
+    @command(
+        description="returns to a previous desktop after an undo pan action",
+        emoji="👁️↪️",
+        metadata="history",
+    )
+    def redo_pan(self, event: HotkeyEvent):
+        entry = self._buffer.redo()
+        entry.go()
+        return DesktopActionOkay(event, pan=Pan(self.current_vd, entry.desktop))
 
     # Directional desktop switching
     # =========================================
@@ -155,24 +199,6 @@ class PowerDesktopLayout(LayoutClass):
     )
     def drag_left(self, event: HotkeyEvent):
         return self._drag_to(event, self.current_vd.left)
-
-    # Desktop history commands
-    # =========================================
-    @(key.q.down & [key.capslock])
-    @command(
-        description="returns to the previous desktop before a pan action",
-        emoji="👁️↩️",
-    )
-    def undo_pan(self, event: HotkeyEvent):
-        pass
-
-    @(key.r.down & [key.capslock])
-    @command(
-        description="returns to a previous desktop after an undo pan action",
-        emoji="👁️↪️",
-    )
-    def redo_pan(self, event: HotkeyEvent):
-        pass
 
     @(key.z.down & [key.capslock])
     @command(description="reverts the last move action", emoji="📦↩️")

@@ -1,3 +1,5 @@
+# pyright: reportUnknownParameterType=false
+
 from dataclasses import dataclass
 from typing import Any, override
 
@@ -11,7 +13,12 @@ from react_tk import (
 )
 
 from power_desktop.ui.command_header import DesktopCommandHeader
-from power_desktop.ui.desktop_status import App, DesktopActionReport
+from power_desktop.ui.desktop_status import (
+    App,
+    DesktopAction,
+    DesktopActionFail,
+    DesktopActionOkay,
+)
 from power_desktop.util.str import truncate_text
 
 justify = 24
@@ -37,9 +44,9 @@ class DestkopHUD(Component[Window]):
 
     @dataclass
     class Inner(Component[Widget]):
-        executed: DesktopActionReport
+        executed: DesktopAction
 
-        def _win_title(self, cmd: DesktopActionReport, apps: tuple[App, ...]):
+        def _win_title(self, cmd: DesktopAction, apps: tuple[App, ...]):
             titles = list(
                 map(lambda x: f"{cmd.event.command.info.label} {x.title}", apps)
             )
@@ -65,41 +72,54 @@ class DestkopHUD(Component[Window]):
                     font=Font(family="Segoe UI Emoji", size=8),
                 ).Pack(ipadx=0, fill="x")
 
+        def _error(self, msg: DesktopActionFail):
+            return ToolTipLabel(
+                text=str(msg),
+                background="#FF0000",
+                justify="center",
+                foreground="#ffffff",
+                font=Font(family="Segoe UI Emoji", size=17, style="normal"),
+            ).Pack(ipadx=15, fill="both")
+
+        def _success_info(self, executed: DesktopActionOkay):
+            orig_desktop = (
+                executed.shove.start if executed.shove else executed.pan.start  # type: ignore
+            )
+            new_desktop = (
+                executed.shove.end if executed.shove else executed.pan.end  # type: ignore
+            )
+            yield ToolTipLabel(
+                text=f"🖥️ {new_desktop.name}{" 👁️" if executed.pan else ""}",
+                background=green_c,
+                foreground="#ffffff",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=17,
+                    style="normal",
+                ),
+            ).Pack(ipadx=15, fill="both")
+
+            if executed.shove:
+                yield from [*self._win_title(executed, executed.shove.apps)]
+
+            yield ToolTipLabel(
+                text=f"↩️ {orig_desktop.name}",
+                background=old_desktop_c,
+                foreground="#ffffff",
+                justify="center",
+                font=Font(
+                    family="Segoe UI Emoji",
+                    size=11,
+                    style="normal",
+                ),
+            ).Pack(ipadx=15, fill="x")
+
         @override
         def render(self):
             result = self.executed
-            orig_desktop = (
-                result.shove.start if result.shove else result.pan.start  # type: ignore
-            )
-            new_desktop = result.shove.end if result.shove else result.pan.end  # type: ignore
-            all: list[Any] = [
-                DesktopCommandHeader(input=result),
-                ToolTipLabel(
-                    text=f"🖥️ {new_desktop.name}{" 👁️" if result.pan else ""}",
-                    background=green_c,
-                    foreground="#ffffff",
-                    font=Font(
-                        family="Segoe UI Emoji",
-                        size=17,
-                        style="normal",
-                    ),
-                ).Pack(ipadx=15, fill="both"),
-            ]
-
-            if result.shove:
-                all.append(self._win_title(self.executed, result.shove.apps))
-
-            all.append(
-                ToolTipLabel(
-                    text=f"↩️ {orig_desktop.name}",
-                    background=old_desktop_c,
-                    foreground="#ffffff",
-                    justify="center",
-                    font=Font(
-                        family="Segoe UI Emoji",
-                        size=11,
-                        style="normal",
-                    ),
-                ).Pack(ipadx=15, fill="x")
-            )
-            return all
+            yield DesktopCommandHeader(input=result)
+            match result:
+                case DesktopActionOkay() as r:
+                    yield from [*self._success_info(r)]
+                case _ as e:
+                    yield self._error(e)

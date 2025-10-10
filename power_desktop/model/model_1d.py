@@ -7,6 +7,7 @@ from pyvda import (  # pyright: ignore[reportMissingTypeStubs]
 )
 
 from power_desktop.util.windows import get_related_windows
+from comtypes import GUID  # type: ignore
 
 
 @dataclass
@@ -24,15 +25,54 @@ class VirtualDesktopGeometry1D:
     def loop(self, index: int):
         return ((index - 1) % self.total) + 1
 
+    def __iter__(self):
+        for i in range(1, self.total + 1):
+            yield Index1D(i, self)
+
+
+@dataclass
+class VdHistoryEntry:
+    id: GUID
+    index: "Index1D"
+    geometry: VirtualDesktopGeometry1D
+
+    def go(self):
+        self.to_index().go()
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, VdHistoryEntry):
+            return NotImplemented
+        return self.id == other.id
+
+    @property
+    def desktop(self):
+        return self.to_index()
+
+    def to_index(self) -> "Index1D":
+        for i in self.geometry:
+            if i.id == self.id:
+                return i
+        return self.index
+
 
 @dataclass
 class Index1D:
     index: int
     geometry: VirtualDesktopGeometry1D
 
+    def to_history_entry(self) -> VdHistoryEntry:
+        return VdHistoryEntry(self.id, self, self.geometry)
+
+    def go(self):
+        self.get_vd().go()
+
+    @property
+    def id(self):
+        return self.get_vd().id
+
     @property
     def name(self):
-        name = self.get_vd().name
+        name = self.get_vd().number
         return name if name else f"Desktop {self.index}"
 
     def __int__(self):

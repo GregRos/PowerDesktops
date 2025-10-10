@@ -52,7 +52,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def setup_logging():
+def setup_logs():
     init(autoreset=True)
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
     ch = logging.StreamHandler()
@@ -69,3 +69,4 @@ def setup_logging():
     loggers = [logging.getLogger(name) for name in logger_names]
     for logger in loggers:
         logger.setLevel(logging.INFO)
+    logging.getLogger("apscheduler").propagate = False

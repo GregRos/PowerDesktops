@@ -1,6 +1,7 @@
 from threading import Thread
 from typing import Any
 import keyboard
+
 from pyvda import (  # pyright: ignore[reportMissingTypeStubs]
     AppView,
     VirtualDesktop,
@@ -20,7 +21,9 @@ def do_vda_change(e: Any):
         print(
             f"Changing desktop from {VirtualDesktop.current().number} to {VirtualDesktop.current().number + 1}"
         )
-        AppView.current().move(VirtualDesktop(VirtualDesktop.current().number + 1))
+        AppView.current().move(
+            VirtualDesktop(VirtualDesktop.current().number + 1)
+        )
 
     Thread(target=do).start()
 

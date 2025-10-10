@@ -3,14 +3,14 @@ from typing import override
 
 from react_tk import Component, Widget, Font, ToolTipLabel
 
-from power_desktop.ui.desktop_status import DesktopActionReport
+from power_desktop.ui.desktop_status import DesktopAction, DesktopActionOkay
 
 header_c = "#2E620C"  # "blue"  # "#20328F"
 
 
 @dataclass
 class DesktopCommandHeader(Component[Widget]):
-    input: DesktopActionReport
+    input: DesktopAction
 
     @override
     def render(self):
