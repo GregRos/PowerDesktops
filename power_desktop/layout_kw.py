@@ -1,4 +1,7 @@
 from logging import getLogger
+import os
+from time import sleep
+from typing import Any
 
 from keyweave import (
     key,
@@ -28,6 +31,8 @@ from power_desktop.ui.desktop_status import (
     DesktopActionFail,
     DesktopActionOkay,
     Pan,
+    ProgramStarted,
+    ProgramStopping,
     Shove,
 )
 from apscheduler.schedulers.background import (  # pyright: ignore[reportMissingTypeStubs]
@@ -64,9 +69,25 @@ class PowerDesktopLayout(LayoutClass):
         )
         scheduler.start()  # type: ignore
 
+        def _announce_start(x: Any) -> None:
+            self._root(executed=ProgramStarted(self._model), hidden=False)
+            sleep(3)
+            self._root(hidden=True)
+
+        def _announce_stop(x: Any) -> None:
+            self._root(executed=ProgramStopping(), hidden=False)
+            sleep(2)
+            self._root(hidden=True)
+            os._exit(0)
+
+        self._layout.on("enter", _announce_start)
+        self._layout.on("exit", _announce_stop)
+
     def __intercept__(self, hk: HotkeyInterceptionEvent):
         try:
             ev = exec_reinit_vda_managers(hk.next)
+            if hk.command.info.metadata == "quit":
+                return
         except BaseException as e:
             ev = DesktopActionFail(hk, e)
         else:
@@ -134,7 +155,7 @@ class PowerDesktopLayout(LayoutClass):
             shove=Shove(infos, start_vd, desktop),
         )
 
-    @(key.q & [key.capslock])
+    @key.q[key.capslock]
     @command(
         description="returns to the previous desktop before a pan action",
         emoji="👁️↩️",
@@ -145,7 +166,17 @@ class PowerDesktopLayout(LayoutClass):
         entry.go()
         return DesktopActionOkay(event, pan=Pan(self.current_vd, entry.desktop))
 
-    @(key.r.down & [key.capslock])
+    @key.esc.down[key.capslock]
+    @command(
+        description="quits PowerDesktops",
+        emoji="🛑",
+        metadata="quit",
+    )
+    def quit_power_desktops(self, event: HotkeyEvent):
+        self.signal_stop()
+        return DesktopActionOkay(event)
+
+    @key.e.down[key.capslock]
     @command(
         description="returns to a previous desktop after an undo pan action",
         emoji="👁️↪️",
@@ -158,17 +189,17 @@ class PowerDesktopLayout(LayoutClass):
 
     # Directional desktop switching
     # =========================================
-    @(key.a & [key.capslock])
+    @key.a[key.capslock]
     @command(description="pans left", emoji="👁️⬅️")
     def pan_left(self, event: HotkeyEvent):
         return self._pan_to(event, self.current_vd.left)
 
-    @(key.d.down & [key.capslock])
+    @key.d.down[key.capslock]
     @command(description="pans right", emoji="👁️➡️")
     def pan_right(self, event: HotkeyEvent):
         return self._pan_to(event, self.current_vd.right)
 
-    @(key.a.down & [key.capslock, key.mouse_2])
+    @key.a.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to $desktop - 1$ without panning",
         emoji="🫷📅",
@@ -176,7 +207,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_left(self, event: HotkeyEvent):
         return self._shove_to(event, self.current_vd.left)
 
-    @(key.d.down & [key.capslock, key.mouse_2])
+    @key.d.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to the $desktop + 1$ without panning",
         emoji="🫸📅",
@@ -184,7 +215,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_right(self, event: HotkeyEvent):
         return self._shove_to(event, self.current_vd.right)
 
-    @(key.d.down & [key.capslock, key.mouse_1])
+    @key.d.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to right desktop and pans",
         emoji="🫱📅",
@@ -192,7 +223,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_right(self, event: HotkeyEvent):
         return self._drag_to(event, self.current_vd.right)
 
-    @(key.a.down & [key.capslock, key.mouse_1])
+    @key.a.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to left desktop and pans",
         emoji="🫲📅",
@@ -200,67 +231,54 @@ class PowerDesktopLayout(LayoutClass):
     def drag_left(self, event: HotkeyEvent):
         return self._drag_to(event, self.current_vd.left)
 
-    @(key.z.down & [key.capslock])
-    @command(description="reverts the last move action", emoji="📦↩️")
-    def undo_move(self, event: HotkeyEvent):
-        pass
-
-    @(key.c.down & [key.capslock])
-    @command(
-        description="reapplies the last move action after an undo move action",
-        emoji="📦↪️",
-    )
-    def redo_move(self, event: HotkeyEvent):
-        pass
-
     # Direct desktop switching
     # =========================================
-    @(key.d_1.down & [key.capslock])
+    @key.d_1.down[key.capslock]
     @command(description="pans to desktop 1", emoji=f"👁️{get_number_emoji(1)}")
     def pan_to_1(self, event: HotkeyEvent):
         return self._pan_to(event, 1)
 
-    @(key.d_2.down & [key.capslock])
+    @key.d_2.down[key.capslock]
     @command(description="pans to desktop 2", emoji=f"👁️{get_number_emoji(2)}")
     def pan_to_2(self, event: HotkeyEvent):
         return self._pan_to(event, 2)
 
-    @(key.d_3.down & [key.capslock])
+    @key.d_3.down[key.capslock]
     @command(description="pans to desktop 3", emoji=f"👁️{get_number_emoji(3)}")
     def pan_to_3(self, event: HotkeyEvent):
         return self._pan_to(event, 3)
 
-    @(key.d_4.down & [key.capslock])
+    @key.d_4.down[key.capslock]
     @command(description="pans to desktop 4", emoji=f"👁️{get_number_emoji(4)}")
     def pan_to_4(self, event: HotkeyEvent):
         return self._pan_to(event, 4)
 
-    @(key.d_5.down & [key.capslock])
+    @key.d_5.down[key.capslock]
     @command(description="pans to desktop 5", emoji=f"👁️{get_number_emoji(5)}")
     def pan_to_5(self, event: HotkeyEvent):
         return self._pan_to(event, 5)
 
-    @(key.d_6.down & [key.capslock])
+    @key.d_6.down[key.capslock]
     @command(description="pans to desktop 6", emoji=f"👁️{get_number_emoji(6)}")
     def pan_to_6(self, event: HotkeyEvent):
         return self._pan_to(event, 6)
 
-    @(key.d_7.down & [key.capslock])
+    @key.d_7.down[key.capslock]
     @command(description="pans to desktop 7", emoji=f"👁️{get_number_emoji(7)}")
     def pan_to_7(self, event: HotkeyEvent):
         return self._pan_to(event, 7)
 
-    @(key.d_8.down & [key.capslock])
+    @key.d_8.down[key.capslock]
     @command(description="pans to desktop 8", emoji=f"👁️{get_number_emoji(8)}")
     def pan_to_8(self, event: HotkeyEvent):
         return self._pan_to(event, 8)
 
-    @(key.d_9.down & [key.capslock])
+    @key.d_9.down[key.capslock]
     @command(description="pans to desktop 9", emoji=f"👁️{get_number_emoji(9)}")
     def pan_to_9(self, event: HotkeyEvent):
         return self._pan_to(event, 9)
 
-    @(key.d_1.down & [key.capslock, key.mouse_1])
+    @key.d_1.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 1 and pans to it",
         emoji=f"📅🫱{get_number_emoji(1)}",
@@ -268,7 +286,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_1(self, event: HotkeyEvent):
         return self._drag_to(event, 1)
 
-    @(key.d_2.down & [key.capslock, key.mouse_1])
+    @key.d_2.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 2 and pans to it",
         emoji=f"📅🫱{get_number_emoji(2)}",
@@ -276,7 +294,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_2(self, event: HotkeyEvent):
         return self._drag_to(event, 2)
 
-    @(key.d_3.down & [key.capslock, key.mouse_1])
+    @key.d_3.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 3 and pans to it",
         emoji=f"📅🫱{get_number_emoji(3)}",
@@ -284,7 +302,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_3(self, event: HotkeyEvent):
         return self._drag_to(event, 3)
 
-    @(key.d_4.down & [key.capslock, key.mouse_1])
+    @key.d_4.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 4 and pans to it",
         emoji=f"📅🫱{get_number_emoji(4)}",
@@ -292,7 +310,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_4(self, event: HotkeyEvent):
         return self._drag_to(event, 4)
 
-    @(key.d_5.down & [key.capslock, key.mouse_1])
+    @key.d_5.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 5 and pans to it",
         emoji=f"📅🫱{get_number_emoji(5)}",
@@ -300,7 +318,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_5(self, event: HotkeyEvent):
         return self._drag_to(event, 5)
 
-    @(key.d_6.down & [key.capslock, key.mouse_1])
+    @key.d_6.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 6 and pans to it",
         emoji=f"📅🫱{get_number_emoji(6)}",
@@ -308,7 +326,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_6(self, event: HotkeyEvent):
         return self._drag_to(event, 6)
 
-    @(key.d_7.down & [key.capslock, key.mouse_1])
+    @key.d_7.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 7 and pans to it",
         emoji=f"📅🫱{get_number_emoji(7)}",
@@ -316,7 +334,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_7(self, event: HotkeyEvent):
         return self._drag_to(event, 7)
 
-    @(key.d_8.down & [key.capslock, key.mouse_1])
+    @key.d_8.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 8 and pans to it",
         emoji=f"📅🫱{get_number_emoji(8)}",
@@ -324,7 +342,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_8(self, event: HotkeyEvent):
         return self._drag_to(event, 8)
 
-    @(key.d_9.down & [key.capslock, key.mouse_1])
+    @key.d_9.down[key.capslock, key.mouse_1]
     @command(
         description="moves the current window to desktop 9 and pans to it",
         emoji=f"📅🫱{get_number_emoji(9)}",
@@ -332,7 +350,7 @@ class PowerDesktopLayout(LayoutClass):
     def drag_to_9(self, event: HotkeyEvent):
         return self._drag_to(event, 9)
 
-    @(key.d_1.down & [key.capslock, key.mouse_2])
+    @key.d_1.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 1 without panning",
         emoji=f"🫸📅{get_number_emoji(1)}",
@@ -340,7 +358,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_1(self, event: HotkeyEvent):
         return self._shove_to(event, 1)
 
-    @(key.d_2.down & [key.capslock, key.mouse_2])
+    @key.d_2.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 2 without panning",
         emoji=f"🫸📅{get_number_emoji(2)}",
@@ -348,7 +366,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_2(self, event: HotkeyEvent):
         return self._shove_to(event, 2)
 
-    @(key.d_3.down & [key.capslock, key.mouse_2])
+    @key.d_3.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 3 without panning",
         emoji=f"🫸📅{get_number_emoji(3)}",
@@ -356,7 +374,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_3(self, event: HotkeyEvent):
         return self._shove_to(event, 3)
 
-    @(key.d_4.down & [key.capslock, key.mouse_2])
+    @key.d_4.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 4 without panning",
         emoji=f"🫸📅{get_number_emoji(4)}",
@@ -364,7 +382,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_4(self, event: HotkeyEvent):
         return self._shove_to(event, 4)
 
-    @(key.d_5.down & [key.capslock, key.mouse_2])
+    @key.d_5.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 5 without panning",
         emoji=f"🫸📅{get_number_emoji(5)}",
@@ -372,7 +390,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_5(self, event: HotkeyEvent):
         return self._shove_to(event, 5)
 
-    @(key.d_6.down & [key.capslock, key.mouse_2])
+    @key.d_6.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 6 without panning",
         emoji=f"🫸📅{get_number_emoji(6)}",
@@ -380,7 +398,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_6(self, event: HotkeyEvent):
         return self._shove_to(event, 6)
 
-    @(key.d_7.down & [key.capslock, key.mouse_2])
+    @key.d_7.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 7 without panning",
         emoji=f"🫸📅{get_number_emoji(7)}",
@@ -388,7 +406,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_7(self, event: HotkeyEvent):
         return self._shove_to(event, 7)
 
-    @(key.d_8.down & [key.capslock, key.mouse_2])
+    @key.d_8.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 8 without panning",
         emoji=f"🫸📅{get_number_emoji(8)}",
@@ -396,7 +414,7 @@ class PowerDesktopLayout(LayoutClass):
     def shove_to_8(self, event: HotkeyEvent):
         return self._shove_to(event, 8)
 
-    @(key.d_9.down & [key.capslock, key.mouse_2])
+    @key.d_9.down[key.capslock, key.mouse_2]
     @command(
         description="moves the current window to desktop 9 without panning",
         emoji=f"🫸📅{get_number_emoji(9)}",

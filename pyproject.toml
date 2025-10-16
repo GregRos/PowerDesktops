@@ -12,12 +12,9 @@ colorama = "^0.4.6"
 keyboard = "^0.13.5"
 pyvda = "^0.4.3"
 pywinauto = "^0.6.8"
-# react-tk = "^0.4.3"
-
-keyweave = "^0.17.0"
-cachetools = "^6.2.0"
 apscheduler = "^3.11.0"
-react-tk = {path = "../react-tk", develop = true}
+react-tk = "^0.4.10"
+keyweave = "^0.18.6"
 
 [tool.poetry.group.dev.dependencies]
 pyinstaller = "^6.16.0"
@@ -30,12 +27,19 @@ exe = "scripts.build:pyi"
 
 [tool.pyright]
 typeCheckingMode = "strict"
-exclude = ["**/site-packages/**"]
+
 autoImportCompletions = true
 autoIndent = true
 diagnosticMode = "workspace"
-ignore = ["**/Lib/*.py"]
-
+reportUnusedImport = false
+ignore = [
+    "**/Lib/*.py",
+    "**/site-packages/**",
+    "**/.venv/**/*",
+    "**/dist/**/*",
+    "**/*.pyi",
+]
+exclude = ["**/site-packages/**", "**/.venv/**/*", "**/dist/**/*", "**/*.pyi"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

@@ -4,8 +4,7 @@ from typing import override
 from react_tk import Component, Widget, Font, ToolTipLabel
 
 from power_desktop.ui.desktop_status import DesktopAction, DesktopActionOkay
-
-header_c = "#2E620C"  # "blue"  # "#20328F"
+from power_desktop.ui.colors import header_c
 
 
 @dataclass
@@ -15,7 +14,7 @@ class DesktopCommandHeader(Component[Widget]):
     @override
     def render(self):
         return ToolTipLabel(
-            text=self.input.event.command.__str__().ljust(30),
+            text=self.input.headline.ljust(30),
             background=header_c,
             justify="left",
             foreground="#dddddd",

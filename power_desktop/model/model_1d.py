@@ -104,10 +104,17 @@ class Index1D:
 
 class Desktop1D:
 
+    def __str__(self) -> str:
+        return f"1D({self.total})"
+
     def at(self, index: int | Index1D) -> Index1D:
         return Index1D(
             int(index), VirtualDesktopGeometry1D(len(get_virtual_desktops()))
         )
+
+    @property
+    def total(self) -> int:
+        return len(get_virtual_desktops())
 
     @property
     def current(self) -> Index1D:

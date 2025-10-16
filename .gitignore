@@ -16,7 +16,6 @@ eggs/
 .eggs/
 lib/
 lib64/
-parts/
 sdist/
 var/
 wheels/
@@ -91,3 +90,4 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 .obsidian/workspace.json
+.venv/

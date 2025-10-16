@@ -87,18 +87,6 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
-name = "cachetools"
-version = "6.2.0"
-description = "Extensible memoizing collections and decorators"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "cachetools-6.2.0-py3-none-any.whl", hash = "sha256:1c76a8960c0041fcc21097e357f882197c79da0dbff766e7317890a65d7d8ba6"},
-    {file = "cachetools-6.2.0.tar.gz", hash = "sha256:38b328c0889450f05f5e120f56ab68c8abaf424e1275522b138ffc93253f7e32"},
-]
-
-[[package]]
 name = "click"
 version = "8.3.0"
 description = "Composable command line interface toolkit"
@@ -201,14 +189,14 @@ pyobjc = {version = "*", markers = "sys_platform == \"darwin\""}
 
 [[package]]
 name = "keyweave"
-version = "0.17.0"
+version = "0.18.6"
 description = "Framework for defining global hotkeys."
 optional = false
-python-versions = "<4.0,>=3.13"
+python-versions = "<3.15,>=3.13"
 groups = ["main"]
 files = [
-    {file = "keyweave-0.17.0-py3-none-any.whl", hash = "sha256:cdb38f2afa6fd6cea7a80ecceb6b5f98c303eece8f8956b981689793bddb4b46"},
-    {file = "keyweave-0.17.0.tar.gz", hash = "sha256:c6a660c49200df0eebd08627f75a08ffa7a096d77c37223222f4235865661b02"},
+    {file = "keyweave-0.18.6-py3-none-any.whl", hash = "sha256:5bee93d76834462cf250524590e89a355236a98628cebe8dd7fb703491690f90"},
+    {file = "keyweave-0.18.6.tar.gz", hash = "sha256:901a22f0f7b3d69c4e20b0f6388dbadb855008192d5202b7ef975441abd9e1a0"},
 ]
 
 [package.dependencies]
@@ -4211,24 +4199,22 @@ files = [
 
 [[package]]
 name = "react-tk"
-version = "0.4.3"
-description = "Build Tkinter apps the React way"
+version = "0.4.10"
+description = "Build Tkinter UIs the React way"
 optional = false
-python-versions = "^3.12"
+python-versions = "<3.15,>=3.12"
 groups = ["main"]
-files = []
-develop = true
+files = [
+    {file = "react_tk-0.4.10-py3-none-any.whl", hash = "sha256:b50a0efa72738551814d9a37f8f68eff46a91d4787156c6d8dc92f95e1f00348"},
+    {file = "react_tk-0.4.10.tar.gz", hash = "sha256:20575ce001a36236b254d6c07a3f278cc7e1b7b607da78b5194658f555375c72"},
+]
 
 [package.dependencies]
-expression = "^5.6.0"
-funcy = "^2.0"
-funcy-typing = "^2.0.8"
-pywin32 = {version = "^311", markers = "sys_platform == \"win32\""}
-typeguard = "^4.4.0"
-
-[package.source]
-type = "directory"
-url = "../react-tk"
+expression = ">=5.6.0,<6.0.0"
+funcy = ">=2.0,<3.0"
+funcy-typing = ">=2.0.8,<3.0.0"
+pywin32 = {version = ">=311,<312", markers = "sys_platform == \"win32\""}
+typeguard = ">=4.4.0,<5.0.0"
 
 [[package]]
 name = "setuptools"
@@ -4339,4 +4325,4 @@ devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.15"
-content-hash = "71a14e50505f31d1f023f2320cbdf1b73f1230feaab8767fc92b4c7f0663b54a"
+content-hash = "c51991e6efd26c10e8d357e81ad76bbaf66bc536db71d66a5058faa034ceb133"

@@ -1,10 +1,12 @@
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from pywinauto.win32_element_info import (  # pyright: ignore[reportMissingTypeStubs]
     HwndElementInfo,
 )
 from keyweave import HotkeyEvent
-from power_desktop.model.model_1d import Index1D
+
+from power_desktop.model.model_1d import Desktop1D, Index1D
 
 
 class DesktopActionReal:
@@ -49,9 +51,33 @@ class Shove(DesktopActionReal):
 
 
 @dataclass
+class ProgramStarted:
+    geometry: "Desktop1D"
+
+    @property
+    def headline(self):
+        return "🚀 PowerDesktops"
+
+
+@dataclass
+class ProgramStopping:
+    @property
+    def headline(self):
+        return "🛑 Quitting PowerDesktops"
+
+    @property
+    def info_line(self):
+        return "(Pressed CAPS+ESC)"
+
+
+@dataclass
 class DesktopActionFail:
     event: HotkeyEvent
     error: BaseException
+
+    @property
+    def headline(self):
+        return str(self.event.command)
 
 
 @dataclass
@@ -60,5 +86,9 @@ class DesktopActionOkay:
     pan: Pan | None = field(default=None)
     shove: Shove | None = field(default=None)
 
+    @property
+    def headline(self):
+        return str(self.event.command)
 
-type DesktopAction = DesktopActionOkay | DesktopActionFail
+
+type DesktopAction = DesktopActionOkay | DesktopActionFail | ProgramStarted | ProgramStopping

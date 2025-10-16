@@ -13,10 +13,5 @@ def postmortem_debug(ex: BaseException):
 
 with PowerDesktopLayout(
     on_error=postmortem_debug,
-):
-    try:
-        # Block forever without a busy loop
-        Event().wait()
-    except KeyboardInterrupt:
-        # Allow clean exit with Ctrl+C
-        pass
+) as x:
+    x.wait()

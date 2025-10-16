@@ -1,0 +1,47 @@
+name: KEYWEAVE
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    name: RELEASE
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+      - name: CHECKOUT
+        uses: actions/checkout@v4
+
+      - name: SETUP PYTHON
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: CACHE POETRY AND PIP
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: INSTALL POETRY
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install poetry
+
+      - name: POETRY INSTALL
+        run: poetry install --with dev
+
+      - name: BLACK CHECK
+        run: poetry run black --check .
+
+      - name: PYRIGHT
+        run: poetry run pyright
